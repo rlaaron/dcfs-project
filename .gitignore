@@ -6,3 +6,6 @@ build/
 *.o
 *.out
 .DS_Store
+.DS_Store
+core/dcfs_core_test
+core/dcfs_storage/

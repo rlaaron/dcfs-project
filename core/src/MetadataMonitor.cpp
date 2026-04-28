@@ -25,16 +25,28 @@ void MetadataMonitor::initNodes(const std::vector<Node>& initialNodes) {
 
 bool MetadataMonitor::allocateSpace(size_t chunkSize, std::string& out_node_id, std::string& out_node_path) {
     std::lock_guard<std::mutex> lock(nodesMutex);
+    
+    std::string best_node_id = "";
+    size_t max_free_space = 0;
+    
     for (auto& pair : nodes) {
         Node& n = pair.second;
-        if (n.max_capacity - n.current_usage >= chunkSize) {
-            // Reserve the space locally
-            n.current_usage += chunkSize;
-            out_node_id = n.id;
-            out_node_path = n.path;
-            return true;
+        size_t free_space = n.max_capacity > n.current_usage ? n.max_capacity - n.current_usage : 0;
+        
+        if (free_space >= chunkSize && free_space > max_free_space) {
+            best_node_id = n.id;
+            max_free_space = free_space;
         }
     }
+    
+    if (best_node_id != "") {
+        Node& n = nodes[best_node_id];
+        n.current_usage += chunkSize;
+        out_node_id = n.id;
+        out_node_path = n.path;
+        return true;
+    }
+    
     return false;
 }
 
