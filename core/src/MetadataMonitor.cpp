@@ -62,10 +62,12 @@ void MetadataMonitor::syncLoop() {
             pendingSyncs.pop();
         }
 
-        // --- MOCK SUPABASE SYNC ---
-        // In a real implementation, we would use libcurl here to POST to Supabase.
-        // We simulate network delay here to test concurrency.
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // --- OUTPUT TO STDOUT FOR BACKEND ---
+        std::cout << "{\"event\":\"chunk_written\","
+                  << "\"file_id\":\"" << chunk.file_id << "\","
+                  << "\"node_id\":\"" << chunk.node_id << "\","
+                  << "\"chunk_index\":" << chunk.chunk_index << ","
+                  << "\"size\":" << chunk.size << "}\n" << std::flush;
         // --------------------------
 
         {
