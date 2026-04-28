@@ -1,0 +1,8 @@
+node_modules/
+.env
+.supabase/
+dist/
+build/
+*.o
+*.out
+.DS_Store
