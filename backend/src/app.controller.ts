@@ -106,6 +106,33 @@ export class AppController {
                 console.error(`Failed to atomically update node ${event.node_id}:`, rpcErr);
               }
               
+              // --- NEW: Upload to Supabase Storage ---
+              try {
+                const nodeData = nodes.find(n => n.id === event.node_id);
+                if (nodeData) {
+                  const localChunkPath = join(process.cwd(), nodeData.folder_path, `${event.file_id}_part${event.chunk_index}`);
+                  const chunkBuffer = await fs.readFile(localChunkPath);
+                  
+                  const storagePath = `${event.node_id}/${event.file_id}_part${event.chunk_index}`;
+                  const { error: uploadErr } = await supabase.storage
+                    .from('dcfs-chunks')
+                    .upload(storagePath, chunkBuffer, {
+                      contentType: 'application/octet-stream',
+                      upsert: true
+                    });
+
+                  if (uploadErr) {
+                    console.error('Supabase Storage upload error:', uploadErr);
+                  } else {
+                    // Clean up local file after successful upload to save space on Railway
+                    await fs.unlink(localChunkPath).catch(e => console.error('Failed to delete local chunk:', e));
+                  }
+                }
+              } catch (storageErr) {
+                console.error('Failed to process chunk for storage:', storageErr);
+              }
+              // ---------------------------------------
+              
             } catch (err) {
               console.error('Error parsing core output or updating DB:', err);
             }
