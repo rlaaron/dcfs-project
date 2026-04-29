@@ -34,6 +34,9 @@ Hemos seguido estrictamente el archivo `implementation_plan.md` y los requerimie
 1. **Concurrencia Real:** El backend en Railway ejecuta el binario C++ compilado que gestiona los hilos de subida y distribución.
 2. **Persistencia Distribuida Simulada:** Los fragmentos se guardan en el sistema de archivos del contenedor de Railway (simulando los nodos), mientras que los metadatos se sincronizan en tiempo real con Supabase Cloud.
 3. **Transparencia Total:** El usuario sube archivos desde la web y el sistema se encarga de la fragmentación y distribución multihilo de forma invisible.
+4. **CI/CD Integrado:** Despliegue automático conectado a GitHub para Railway y Vercel.
 
 ---
 **¡Misión Cumplida! El sistema DCFS cumple con todos los requisitos académicos y técnicos propuestos.**
+
+*(Última prueba de integración continua CI/CD - Despliegue Automático)*
