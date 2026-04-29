@@ -1,4 +1,4 @@
-// CI/CD Test - Triggering Vercel Deployment
+// CI/CD Test 2 - Verifying Vercel Auto-Deployment
 import Header from '@/components/layout/Header';
 import Hero from '@/components/landing/Hero';
 import ArchitectureAnimation from '@/components/landing/ArchitectureAnimation';
