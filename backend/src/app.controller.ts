@@ -1,5 +1,5 @@
 // CI/CD Test - Triggering Railway Deployment
-import { Controller, Post, UseInterceptors, UploadedFile, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors, UploadedFile, HttpException, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { spawn } from 'child_process';
 import { join } from 'path';
@@ -15,6 +15,59 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 @Controller()
 export class AppController {
+
+  @Post('reset-topology')
+  async resetTopology(@Body('nodesCount') nodesCount: number) {
+    if (!nodesCount || nodesCount < 1 || nodesCount > 10) {
+      throw new HttpException('Invalid nodesCount (must be 1-10)', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      // 1. Delete all files (cascades to chunks)
+      const { error: errFiles } = await supabase.from('files').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (errFiles) throw errFiles;
+
+      // 2. Delete all nodes
+      const { error: errNodes } = await supabase.from('nodes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (errNodes) throw errNodes;
+
+      // 3. Recreate nodes
+      const totalCapacityBytes = 50 * 1024 * 1024; // 50 MB total for the cluster
+      const capacityPerNode = Math.floor(totalCapacityBytes / nodesCount);
+      const newNodes = [];
+      for (let i = 1; i <= nodesCount; i++) {
+        newNodes.push({
+          name: `Disk ${i}`,
+          folder_path: `nodes/disk${i}`,
+          max_capacity: capacityPerNode
+        });
+      }
+
+      const { error: errInsert } = await supabase.from('nodes').insert(newNodes);
+      if (errInsert) throw errInsert;
+
+      // Optionally, clean up the storage bucket
+      const { data: bucketFiles } = await supabase.storage.from('dcfs-chunks').list();
+      if (bucketFiles && bucketFiles.length > 0) {
+        // Warning: this lists root files. In the new architecture they are under folders per node_id
+        // but let's do a simple empty bucket approach if there are folders
+        const { data: folders } = await supabase.storage.from('dcfs-chunks').list('', { limit: 100 });
+        if (folders) {
+          for (const folder of folders) {
+             const { data: filesInFolder } = await supabase.storage.from('dcfs-chunks').list(folder.name, { limit: 100 });
+             if (filesInFolder && filesInFolder.length > 0) {
+                const pathsToRemove = filesInFolder.map(f => `${folder.name}/${f.name}`);
+                await supabase.storage.from('dcfs-chunks').remove(pathsToRemove);
+             }
+          }
+        }
+      }
+
+      return { message: `Topology reset to ${nodesCount} nodes successfully.` };
+    } catch (err: any) {
+      throw new HttpException(`Reset failed: ${err.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))

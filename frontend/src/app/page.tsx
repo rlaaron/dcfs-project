@@ -3,6 +3,7 @@ import Header from '@/components/layout/Header';
 import Hero from '@/components/landing/Hero';
 import ArchitectureAnimation from '@/components/landing/ArchitectureAnimation';
 import ConcurrencyAnimation from '@/components/landing/ConcurrencyAnimation';
+import CodeStack from '@/components/landing/CodeStack';
 import UploadDashboard from '@/components/dashboard/UploadDashboard';
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
         <Hero />
         <ArchitectureAnimation />
         <ConcurrencyAnimation />
+        <CodeStack />
         <UploadDashboard />
       </main>
     </div>
