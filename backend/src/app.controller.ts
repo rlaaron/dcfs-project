@@ -2,6 +2,7 @@ import { Controller, Post, UseInterceptors, UploadedFile, HttpException, HttpSta
 import { FileInterceptor } from '@nestjs/platform-express';
 import { spawn } from 'child_process';
 import { join } from 'path';
+import { promises as fs } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import * as multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
@@ -44,6 +45,16 @@ export class AppController {
       throw new HttpException(`Failed to fetch nodes: ${nodeErr?.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // 3. DYNAMIC FOLDERS: Ensure all physical directories exist before giving them to C++
+    for (const node of nodes) {
+      try {
+        const fullPath = join(process.cwd(), node.folder_path);
+        await fs.mkdir(fullPath, { recursive: true });
+      } catch (err) {
+        console.error(`Failed to ensure directory exists for node ${node.name}:`, err);
+      }
+    }
+
     // Format nodes for C++ binary: "id|path|max_capacity|current_usage"
     const nodeArgs = nodes.map(n => `${n.id}|${n.folder_path}|${n.max_capacity}|${n.current_usage}`);
 
@@ -77,7 +88,7 @@ export class AppController {
             try {
               const event = JSON.parse(line);
               
-              // 3. Insert chunk record into Supabase
+              // Insert chunk record into Supabase
               await supabase.from('chunks').insert({
                 file_id: event.file_id,
                 node_id: event.node_id,
@@ -85,13 +96,14 @@ export class AppController {
                 size: event.size
               });
 
-              // 4. Update the node usage directly in Supabase
-              // We read first and add (for production you'd use a postgres function/rpc to avoid race conditions, but this is fine for now)
-              const { data: nData } = await supabase.from('nodes').select('current_usage').eq('id', event.node_id).single();
-              if (nData) {
-                await supabase.from('nodes')
-                  .update({ current_usage: nData.current_usage + event.size })
-                  .eq('id', event.node_id);
+              // FIX CONCURRENCY: Atomic Update via SQL RPC
+              const { error: rpcErr } = await supabase.rpc('increment_node_usage', {
+                p_node_id: event.node_id,
+                p_size: event.size
+              });
+
+              if (rpcErr) {
+                console.error(`Failed to atomically update node ${event.node_id}:`, rpcErr);
               }
               
             } catch (err) {
