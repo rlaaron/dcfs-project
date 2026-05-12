@@ -26,25 +26,43 @@ void MetadataMonitor::initNodes(const std::vector<Node>& initialNodes) {
 bool MetadataMonitor::allocateSpace(size_t chunkSize, std::string& out_node_id, std::string& out_node_path) {
     std::lock_guard<std::mutex> lock(nodesMutex);
     
-    std::string best_node_id = "";
-    size_t max_free_space = 0;
+    if (nodes.empty()) return false;
+
+    // Simple Round-Robin to guarantee even distribution
+    static int rr_index = 0;
+    int current_idx = 0;
+    std::string selected_node = "";
     
+    // First pass: try to pick based on Round-Robin index
     for (auto& pair : nodes) {
-        Node& n = pair.second;
-        size_t free_space = n.max_capacity > n.current_usage ? n.max_capacity - n.current_usage : 0;
-        
-        if (free_space >= chunkSize && free_space > max_free_space) {
-            best_node_id = n.id;
-            max_free_space = free_space;
+        if (current_idx == rr_index % nodes.size()) {
+            selected_node = pair.first;
+            break;
+        }
+        current_idx++;
+    }
+    
+    // Check if selected has capacity
+    if (selected_node != "") {
+        Node& n = nodes[selected_node];
+        if (n.max_capacity > n.current_usage && (n.max_capacity - n.current_usage) >= chunkSize) {
+            n.current_usage += chunkSize;
+            out_node_id = n.id;
+            out_node_path = n.path;
+            rr_index++; // Move to next for future
+            return true;
         }
     }
     
-    if (best_node_id != "") {
-        Node& n = nodes[best_node_id];
-        n.current_usage += chunkSize;
-        out_node_id = n.id;
-        out_node_path = n.path;
-        return true;
+    // Fallback: If round-robin picked a full node, search for any node with space
+    for (auto& pair : nodes) {
+        Node& n = pair.second;
+        if (n.max_capacity > n.current_usage && (n.max_capacity - n.current_usage) >= chunkSize) {
+            n.current_usage += chunkSize;
+            out_node_id = n.id;
+            out_node_path = n.path;
+            return true;
+        }
     }
     
     return false;

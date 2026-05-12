@@ -11,15 +11,16 @@ include_directories(include)
 find_package(Threads REQUIRED)
 
 # Source files
-set(SOURCES
+set(SOURCES_COMMON
     src/ThreadManager.cpp
     src/MetadataMonitor.cpp
     src/ChunkManager.cpp
-    src/main_test.cpp
 )
 
-# Executable
-add_executable(dcfs_core_test ${SOURCES})
+# Executables
+add_executable(dcfs_core_test ${SOURCES_COMMON} src/main_test.cpp)
+add_executable(dcfs_core ${SOURCES_COMMON} src/main.cpp)
 
 # Link threads
 target_link_libraries(dcfs_core_test PRIVATE Threads::Threads)
+target_link_libraries(dcfs_core PRIVATE Threads::Threads)
