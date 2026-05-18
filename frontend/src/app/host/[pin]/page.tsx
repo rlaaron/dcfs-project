@@ -92,7 +92,7 @@ export default function HostDashboard() {
     if (!window.confirm("¿Estás seguro de que quieres terminar la sesión? Esto eliminará todos los archivos y desconectará a todos.")) return;
     setIsEnding(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/session/${pin}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/session/${pin}`, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(await res.text());
@@ -104,7 +104,7 @@ export default function HostDashboard() {
   };
 
   const handleDownload = (fileId: string) => {
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/file/${fileId}/download`;
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/file/${fileId}/download`;
   };
 
   if (phase === 'lobby') {

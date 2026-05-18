@@ -13,7 +13,7 @@ export default function InteractiveLobby() {
   const handleCreateSession = async () => {
     setIsCreating(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/session`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nodesCount })

@@ -27,7 +27,7 @@ export default function UploadDashboard() {
   const [nodes, setNodes] = useState<any[]>([]);
   const [isResetting, setIsResetting] = useState(false);
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app';
 
   const fetchNodes = async () => {
     const { data, error } = await supabase.from('nodes').select('*').order('name', { ascending: true });

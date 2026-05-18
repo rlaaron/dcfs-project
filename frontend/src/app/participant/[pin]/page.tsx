@@ -75,7 +75,7 @@ export default function ParticipantDashboard() {
     formData.append('nickname', nickname);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -92,7 +92,7 @@ export default function ParticipantDashboard() {
   const handleDelete = async (fileId: string) => {
     if (!window.confirm("¿Seguro que deseas eliminar este archivo?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/file/${fileId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/file/${fileId}`, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error(await res.text());
@@ -102,7 +102,7 @@ export default function ParticipantDashboard() {
   };
 
   const handleDownload = (fileId: string) => {
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/file/${fileId}/download`;
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/file/${fileId}/download`;
   };
 
   if (!nickname) return null;

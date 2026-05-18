@@ -24,7 +24,7 @@ export default function JoinSession() {
     if (nickname.trim()) {
       setIsJoining(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002'}/participant`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://dcfs-backend-production.up.railway.app'}/participant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_pin: pin, nickname: nickname.trim() })
