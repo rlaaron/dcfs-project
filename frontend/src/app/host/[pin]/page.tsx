@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, HardDrive, Package, Loader2, Server, Play, StopCircle, Download, Code2, X } from 'lucide-react';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jqlaaaijovxixjfnzxsf.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy_key';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxbGFhYWlqb3Z4aXhqZm56eHNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczODM5OTYsImV4cCI6MjA5Mjk1OTk5Nn0.iYjMJK8NWtTDYlfns3vhtXZbjrOMNTs7ULYA-cTJQu4';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 type Phase = 'lobby' | 'active';
